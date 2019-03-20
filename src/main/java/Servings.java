@@ -47,6 +47,8 @@ class Servings {
                     int newValue = Integer.valueOf(number.toString());
                     newValue *= servings;
                     newValue /= oldValue;
+                    if (newValue == 0)
+                        newValue++;
                     // Reset old number to be replaced with newValue
                     number.setLength(0);
                     number.append(newValue);
@@ -71,7 +73,7 @@ class Servings {
     }
 
     public static void individualServing(int servings, String meal) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("ingredients.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("ingredientsWeekly.txt"));
         BufferedWriter writer = new BufferedWriter(new FileWriter("tmp.txt"));
         StringBuilder number = new StringBuilder();
         StringBuilder oldString = new StringBuilder();
@@ -109,11 +111,13 @@ class Servings {
                                 break;
                             }
                         }
-                        if (number.toString() == null)
+                        if (number.toString() == null || number.length() == 0)
                             break;
                         int newValue = Integer.valueOf(number.toString());
                         newValue *= servings;
                         newValue /= oldValue;
+                        if (newValue == 0)
+                            newValue++;
                         // Reset old number to be replaced with newValue
                         number.setLength(0);
                         number.append(newValue);
@@ -137,7 +141,7 @@ class Servings {
         reader.close();
         writer.close();
         File file = new File("tmp.txt");
-        File file1 = new File("ingredients.txt");
+        File file1 = new File("ingredientsWeekly.txt");
         file.renameTo(file1);
     }
 }

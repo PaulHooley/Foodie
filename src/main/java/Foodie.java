@@ -1,4 +1,3 @@
-import java.awt.FlowLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -7,15 +6,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.*;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 class foodie {
     // Used for all the titles of meals in personal ingredients list
-    public static List<String> titles = new ArrayList<>();
-    public static String[] tags = { "Gluten Free" };
+    public static List<String> titles = new ArrayList<>(); // Used for overview of weekly meals
+    public static String[] tags = { "" };
     public static String[] dislikes = { "" };
     public static final int numberOfServings = 1;
-    public static final int numberOfMeals = 7;
+    public static final int numberOfMeals = 20;
+    public static final int shoppingFrequency = 1; //1 = once a week, 2 = once every 2 weeks (Simple but dumb maths)
 
     public static void main(String[] args) throws IOException, InterruptedException {
         refreshMeals();
@@ -37,11 +40,11 @@ class foodie {
         f.setSize(1000, 500);
     }
 
-    private static void refreshMeals() throws IOException, InterruptedException {
+    private static void refreshMeals() throws IOException, InterruptedException, NullPointerException {
         // Used for updating the masterIngredients file
         updatingMaster();
 
-        // Testing reader
+        // Builds the sublist with all meals that are okay to select from
         BufferedWriter write = new BufferedWriter(new FileWriter("ingredients.txt"));
         BufferedReader reader = new BufferedReader(new FileReader("ingredientsMaster.txt"));
         String line = reader.readLine();
@@ -55,21 +58,24 @@ class foodie {
         String pref = preferences.toString();
         String find = line.toString();
         // If the preferences line is the same it does nothing - no need to update
-        // TODO: Reruns through entire code despite trying to ignore it
+        // TODO: Read old ingredients file
         if (find.contains(pref)) {
             System.out.println("No changes");
         }
-        // Otherwise we itterate through each meal and add all their info to new
-        // document
+        // Otherwise we itterate through each meal and add all their info to
+        // Ingredients.txt
         else {
-            write.write("Preferences: ");
-            for (String tag : tags) {
-                write.write(tag.toString() + " ");
-            }
+            // write.write("HelloWorld");
+            // TODO: Understand why the first two lines write at the same time
             write.write("\nDislikes: ");
             for (String dis : dislikes) {
                 write.write(dis.toString() + " ");
             }
+            write.write("\nPreferences: ");
+            for (String tag : tags) {
+                write.write(tag + " ");
+            }
+
             write.write("\n\n");
             while (line != null) {
                 boolean goodToEat = false;
@@ -85,22 +91,26 @@ class foodie {
                         }
                     }
                 }
-                // TODO: Allow for dislikes to be removed from file - this code breaks the
-                // project
-                // if(goodToEat){
-                // while(!find.equals(":end")){
-                // for(String dis: dislikes){
-                // if(find.contains(dis.toString())){
-                // goodToEat = true;
-                // }else{
-                // goodToEat = false;
-                // break;
+                // For dislikes will reset reader if meal doesnt have ingredients in it
+
+                // if (goodToEat) {
+                //     while (!find.equals(":end")) {
+                //         for (String dis : dislikes) {
+                //             if (find.contains(dis.toString())) {
+                //                 goodToEat = false;
+                //                 break;
+                //             } else {
+                //                 goodToEat = true;
+                //             }
+                //         }
+                //         line = reader.readLine();
+                //         find = line.toString();
+                //     }
+                //     if (goodToEat)
+                //         reader.reset();
                 // }
-                // }
-                // }
-                // reader.reset();
-                // }
-                // System.out.println("Start");
+
+                // If its good to eat it will get written into the ingredients list
                 if (goodToEat) {
                     while (!find.equals(":end")) {
                         find = line.toString();
@@ -117,8 +127,10 @@ class foodie {
         reader.close();
         write.close();
         Servings.mealPortions(numberOfServings);
-        WeeklyMeals.generateMeals(numberOfMeals);
+        WeeklyMeals.generateMeals(numberOfMeals * shoppingFrequency);
+        // Servings.individualServing(5, "Greek Kofta Beef Bowl");
         // Servings.individualServing(2, "Rice Noodles in Coconut Curry Broth");
+        Cart.createCart();
     }
 
     public static void updatingMaster() throws IOException, InterruptedException {
@@ -144,7 +156,7 @@ class foodie {
     }
 
     public static List<String> getMeal() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("ingredients.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("ingredientsWeekly.txt"));
         List<String> mealList = new ArrayList<>();
         StringBuilder ingredients = new StringBuilder();
         String line = reader.readLine();
